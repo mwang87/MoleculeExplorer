@@ -39,7 +39,7 @@ def import_results_dataset(dataset_id)
     end
     
     #Import information
-    import_library_identification_results(continuous_id_task, dataset_id)
+    import_library_identification_results(continuous_id_task, dataset_id, task_id)
 end
 
 #Returns the task id of the most recent reported job, if non, returns nil
@@ -53,59 +53,32 @@ def get_most_recent_reported_ci_job(ci_list)
 end
 
 #importing library identification results
-def import_library_identification_results(ci_task, dataset_id)
+def import_library_identification_results(ci_task, dataset_id, dataset_task)
     root_url = "http://gnps.ucsd.edu"
 
     identification_information_url = root_url + "/ProteoSAFe/result_json.jsp" + "?task=" + ci_task + "&view=group_by_spectrum_all_beta"
     puts identification_information_url
     identification_data = JSON.parse(http_get(identification_information_url))["blockData"]
 
+
+    dataset_db = Dataset.first_or_create(:name => dataset_id, :task_id => dataset_task)
+
     identification_data.each {|identification_row|
-        puts identification_row["SpectrumID"]
+        spectrumid = identification_row["SpectrumID"]
+        compoundname = identification_row["Compound_Name"]
+        libraryspectrum_db = Libraryspectrum.first_or_create(:spectrumid => spectrumid, :compoundname => compoundname)
+
+        #Adding a connection between dataset to library spectrum
+        spectrum_scan = identification_row["#Scan#"]
+
+        Datasetidentification.first_or_create(
+            :scan => spectrum_scan, 
+            :dataset => dataset_db,
+            :libraryspectrum => libraryspectrum_db)
     }
 
 end
 
-#Takes a list of tab files, single threaded, one process
-def import_all_tab_files(tabs_list, dataset_id, task_id, root_url)
-    tabs_list.each { |tab_object| 
-        tab_file = tab_object["MzTab_file"]
-        import_dataset_tab_psm_file(dataset_id, task_id, tab_file, root_url)
-    }
-end
-
-#Takes a list of tab files, multiprocess threaded
-def import_all_tab_files_parallel(tabs_list, dataset_id, task_id, root_url)
-    max_parallelism = 2
-    running_parallelism = 0
-
-    tabs_list.each { |tab_object| 
-        tab_file = tab_object["MzTab_file"]
-        
-        running_parallelism += 1
-
-        fork do
-            #import_dataset_tab_psm_file(dataset_id, task_id, tab_file, root_url)
-            import_tab_cmd = "ruby ./populate_parallel_tab.rb " 
-            import_tab_cmd += dataset_id + " "
-            import_tab_cmd += task_id + " "
-            import_tab_cmd += tab_file + " "
-            import_tab_cmd += root_url
-
-            puts import_tab_cmd
-            `#{import_tab_cmd}`
-
-            abort
-        end
-
-        if running_parallelism == max_parallelism
-            Process.waitall
-            running_parallelism = 0
-        end   
-    }
-
-    Process.waitall
-end
 
 
 def import_dataset_tab_psm_file(dataset_id, task_id, tsv_id, root_url)
