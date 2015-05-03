@@ -16,6 +16,23 @@ def http_get(url)
     return res.body
 end
 
+def import_results_all_dataset()
+    root_url = "http://gnps.ucsd.edu"
+    all_datasets_list_url = root_url + "/ProteoSAFe/datasets_json.jsp"
+
+    all_datasets_list = JSON.parse(http_get(all_datasets_list_url))["datasets"]
+
+    all_datasets_list.each do |dataset_info|
+        #Filtering to GNPS datasets
+        if dataset_info["title"].downcase.index("gnps") != nil
+            puts dataset_info["title"]
+            puts dataset_info["dataset"]
+            dataset_id = dataset_info["dataset"]
+            import_results_dataset(dataset_id)
+        end
+    end
+end
+
 def import_results_dataset(dataset_id)
     #Get task_id for dataset_id
     #http://gnps.ucsd.edu/ProteoSAFe/MassiveServlet?massiveid=MSV000078711&function=massiveinformation
@@ -95,7 +112,13 @@ def import_network_information(ci_task, dataset_id, dataset_task)
     all_library_spectra = all_identifications.libraryspectrum
 
     network_pairs_url = root_url + "/ProteoSAFe/result_json.jsp" + "?task=" + ci_task + "&view=clusters_network_pairs"
-    pairs_data = JSON.parse(http_get(network_pairs_url))["blockData"]
+    pairs_data = nil
+    begin
+        pairs_data = JSON.parse(http_get(network_pairs_url))["blockData"]
+    rescue
+        return
+    end
+
 
     cluster_info_url = root_url + "/ProteoSAFe/result_json.jsp" + "?task=" + ci_task + "&view=view_all_clusters_withID"
     cluster_data = JSON.parse(http_get(cluster_info_url))["blockData"]
@@ -151,7 +174,11 @@ def import_network_information(ci_task, dataset_id, dataset_task)
             else
                 unidentified_mz_values[network_object.get_node(unid_neighbor).mz] = 1
             end
-            #identified_mz_values[network_object.get_node(id_neighbor).mz]
+            #Adding analog to database
+            Datasetanalog.first_or_create(:scan => unid_neighbor, 
+                :mz => network_object.get_node(unid_neighbor).mz,
+                :dataset => dataset_db, 
+                :libraryspectrum => Libraryspectrum.first(:spectrumid => key))
         end
         puts key
         puts unidentified_mz_values

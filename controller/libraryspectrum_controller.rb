@@ -57,5 +57,16 @@ get '/libraryspectrum/aggregateview' do
         @next_page = nil
     end
 
+    haml :libraryspectra
+end
+
+get '/libraryspectrum/:spectrumid' do
+    spectrumid = params[:spectrumid]
+
+    @library_spectrum = Libraryspectrum.first(:spectrumid => spectrumid)
+    @datasets = @library_spectrum.dataset
+
+    puts @datasets
+
     haml :libraryspectrum
 end

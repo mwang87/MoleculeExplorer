@@ -1,35 +1,12 @@
-- if @next_page != nil
-    %a.btn.btn-default.pull-right{:style=>"margin-right: 20px; margin-bottom: 20px", :href => "#{@request_path}?#{@param_string}&page=#{@next_page}#{@sort_string}"} Next Page
-- if @previous_page != nil
-    %a.btn.btn-default.pull-right{:style=>"margin-right: 10px; margin-bottom: 20px", :href => "#{@request_path}?#{@param_string}&page=#{@previous_page}#{@sort_string}"} Prev Page
-
-%br
-%div
-    #{@total_count} Results
-%br
-
-%form{:action => "/libraryspectrum/aggregateview", :method => "get"}
-    .form-group
-        %label{:for => "name"} SpectrumID
-        %input.form-control{:type => "text", :name => "spectrumid", :class => "text", :value => "#{@spectrumid_input}"}
-        %p
-        %label{:for => "aboutme"} CompoundName
-        %input.form-control{:type => "text", :name => "compoundname", :class => "text", :value => "#{@compoundname_input}"}
-        %p
-        %label{:for => "aboutme"} DatasetID
-        %input.form-control{:type => "text", :name => "datasetid", :class => "text", :value => "#{@datasetid_input}"}
-    %input.btn.btn-default{:type => "submit", :value => "Update Library Spectrum"} 
-
-
-%table.table.table-striped.table-condensed.tablesorter
-    %thead
-        %tr
-            %th SpectrumID
-            %th Compound
-            %th DatasetCount
-    - @all_library_spectrum.each do |libraryspectrum|
-        %tr
-            %td{:style=>"vertical-align:middle"}= libraryspectrum.spectrumid
-            %td{:style=>"vertical-align:middle"}= libraryspectrum.compoundname
-            %td{:style=>"vertical-align:middle"}= libraryspectrum.dataset.count
-
+%div#spectruminformation
+    %table.table.table-striped.table-condensed.tablesorter
+        %thead
+            %tr
+                %th{:style=>"vertical-align:middle"}= "Dataset"
+                %th{:style=>"vertical-align:middle"}= "Matches To Dataset"
+                %th{:style=>"vertical-align:middle"}= "Analogs In Dataset"
+        - @datasets.each do |dataset|
+            %tr
+                %td{:style=>"vertical-align:middle"}= dataset.name
+                %td{:style=>"vertical-align:middle"}= Datasetidentification.count(:dataset => dataset, :libraryspectrum => @library_spectrum)
+                %td{:style=>"vertical-align:middle"}= Datasetanalog.count(:dataset => dataset, :libraryspectrum => @library_spectrum)
