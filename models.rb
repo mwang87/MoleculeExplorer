@@ -9,6 +9,7 @@ class Dataset
     property :id,               Serial
     property :name,             String
     property :task_id,          String
+    property :continuous_task_id, String
 end
 
 
@@ -18,7 +19,7 @@ class Libraryspectrum
     property :spectrumid,       String
     property :compoundname,     String
 
-    has n, :dataset, :through => :datasetLibraryspectrum 
+    has n, :dataset, :through => :datasetLibraryspectrum
 end
 
 class DatasetLibraryspectrum
@@ -42,6 +43,7 @@ DataMapper.finalize
 Dataset.auto_migrate! unless Dataset.storage_exists?
 Libraryspectrum.auto_migrate! unless Libraryspectrum.storage_exists?
 Datasetidentification.auto_migrate! unless Datasetidentification.storage_exists?
+DatasetLibraryspectrum.auto_migrate! unless DatasetLibraryspectrum.storage_exists?
 DataMapper.auto_upgrade!
 
 

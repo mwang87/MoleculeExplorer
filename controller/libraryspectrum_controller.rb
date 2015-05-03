@@ -1,4 +1,3 @@
-
 get '/libraryspectrum/aggregateview' do
     page_number, @previous_page, @next_page = page_prev_next_utilties(params)
     @page_number = page_number
