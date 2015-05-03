@@ -17,6 +17,16 @@ class Libraryspectrum
     property :id,               Serial
     property :spectrumid,       String
     property :compoundname,     String
+
+    has n, :dataset, :through => :datasetLibraryspectrum 
+end
+
+class DatasetLibraryspectrum
+    include DataMapper::Resource
+    property :id,               Serial
+
+    belongs_to :dataset
+    belongs_to :libraryspectrum
 end
 
 class Datasetidentification

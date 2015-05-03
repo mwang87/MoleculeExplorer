@@ -75,43 +75,10 @@ def import_library_identification_results(ci_task, dataset_id, dataset_task)
             :scan => spectrum_scan, 
             :dataset => dataset_db,
             :libraryspectrum => libraryspectrum_db)
+
+        DatasetLibraryspectrum.first_or_create(
+            :dataset => dataset_db,
+            :libraryspectrum => libraryspectrum_db)
     }
 
-end
-
-
-
-def import_dataset_tab_psm_file(dataset_id, task_id, tsv_id, root_url)
-    tab_information_url = root_url + "/ProteoSAFe/result_json.jsp?task=" + task_id + "&view=group_by_spectrum&file=" + tsv_id
-    tab_data = JSON.parse(http_get(tab_information_url))["blockData"]
-
-    puts "Parsing Tab: " + tsv_id + " with " + tab_data.length.to_s + " entries "
-    
-    psm_count = 0
-    dataset_db = get_create_dataset(dataset_id, task_id)
-    
-    tab_data.each{ |psm_object|
-        psm_count += 1
-        #puts psm_count.to_s + " of " + tab_data.length.to_s
-        spectrum_file = psm_object["#SpecFile"]
-        scan =  psm_object["nativeID_scan"]
-        peptide = psm_object["modified_sequence"]
-        protein = psm_object["accession"]
-        modification_string = psm_object["modifications"]
-
-        #Adding Proteins
-        protein_db = get_create_protein(protein)
-        protein_dataset_join = create_dataset_protein_link(protein_db, dataset_db)
-
-        modifications_list = Array.new
-        if modification_string != "null"
-            modifications_list = modification_string.split(',')
-        end
-	
-        
-        peptide_db, variant_db = get_create_peptide(peptide, dataset_db, protein_db)
-        psm_db = get_create_psm(variant_db, dataset_db, protein_db, peptide_db, tsv_id, scan, spectrum_file, peptide)
-        get_create_modification(modifications_list, peptide_db, variant_db, dataset_db, protein_db, psm_db)
-        
-    }
 end

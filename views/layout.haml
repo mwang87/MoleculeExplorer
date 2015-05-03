@@ -1,0 +1,28 @@
+%html
+    %head
+        %title Ming Wang Proxi 
+
+
+// Javacript Includes 
+%script{:src=>"/js/jquery-1.11.0.js"}
+%script{:src=>"/js/jquery.tablesorter.js"}
+%script{:src=>"/js/jquery-ui-1.10.4.custom.min.js"}
+%script{:src=>"/js/bootstrap.js"}
+
+%link{:href=>"/css/ui-lightness/jquery-ui-1.10.4.custom.min.css", :rel=>"stylesheet"}
+%link{:href=>"/css/bootstrap.css", :rel=>"stylesheet"}
+%link{:href=>"/css/minglibraryviewer.css", :rel=>"stylesheet"}
+
+%body
+    %nav.navbar.navbar-fixed-top.navbar-inverse{:role=>"navigation"}
+        .container
+            .navbar-header
+                %button.navbar-toggle{:type=>"button", "data-toggle"=>"collapse", "data-target"=>".navbar-ex1-collapse"}
+                    %span.sr-only Toggle navigation
+                    %span.icon-bar
+                    %span.icon-bar
+                    %span.icon-bar
+                %a.navbar-brand{:href=>"/"} Browser Home
+    
+    %div#contentdiv
+        = yield
